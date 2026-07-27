@@ -9,7 +9,7 @@
     <header>
         <div class="logo-container">
             <div class="logo-img">
-                <img src="logo.png" alt="Logo Sebas Cook" onerror="this.style.display='none'">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Sebas Cook">
             </div>
             <span class="logo-text">Sebas Cook</span>
         </div>
@@ -19,7 +19,5 @@
             <a href="admin.html" class="nav-btn">Admin</a>
         </nav>
     </header>
-    <!-- FIN DEL HEADER -->
-
 </body>
 </html>
