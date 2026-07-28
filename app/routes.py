@@ -13,3 +13,9 @@ def landing():
 @main.route('/ordena', methods=['GET', 'POST'])
 def ordena():
     return render_template('ordena.html')
+
+@main.route('/contact', methods=['GET', 'POST'])
+def contact():
+    return render_template('contact.html')
+
+
