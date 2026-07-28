@@ -1,1 +1,31 @@
-here
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ordena.css') }}">
+
+<main class="menu-container">
+    <h1 class="menu-heading">Nuestro Menú</h1>
+
+    <div class="menu-grid">
+        {% for item in menu_items %}
+            <div class="menu-card">
+                <h2 class="item-title">{{ item.name }}</h2>
+                <ul class="variant-list">
+                    {% for variant in item.variants %}
+                        <li class="variant-item">
+                            <span class="variant-name">{{ variant.variant_name }}</span>
+                            <span class="variant-price">${{ "%.2f"|format(variant.price) }}</span>
+
+                            {% if variant.remaining > 0 and variant.status == 'available' %}
+                                <span class="variant-stock">{{ variant.remaining }} disponibles</span>
+                            {% else %}
+                                <span class="variant-out-of-stock">Agotado</span>
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from app.models import MenuItem
 
 main = Blueprint('main', __name__)
 
@@ -12,7 +13,8 @@ def landing():
 
 @main.route('/ordena', methods=['GET', 'POST'])
 def ordena():
-    return render_template('ordena.html')
+    menu_items = MenuItem.query.all()
+    return render_template('ordena.html', menu_items=menu_items)
 
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
