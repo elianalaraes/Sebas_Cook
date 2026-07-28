@@ -8,5 +8,8 @@ def home():
 
 @main.route('/landing', methods=['GET', 'POST'])
 def landing():
-    name = request.form.get('name') if request.method == 'POST' else ''
-    return render_template('landing.html', name=name)
+    return render_template('landing.html')
+
+@main.route('/ordena', methods=['GET', 'POST'])
+def ordena():
+    return render_template('ordena.html')
