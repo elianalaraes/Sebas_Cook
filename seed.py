@@ -23,20 +23,20 @@ def seed_database():
         # 2. Galletas
         galletas = MenuItem(name="Galleta", category="Galletas")
         galletas.variants = [
-            MenuItemVariant(variant_name="Red Velvet", price=15.0, remaining=15, status="available"),
+            MenuItemVariant(variant_name="Red Velvet", price=15.0, remaining=15, status="sold_out"),
             MenuItemVariant(variant_name="Chispas de Chocolate", price=15.0, remaining=20, status="available"),
         ]
 
         # 3. Pan de Muerto (Single variant)
         pan_muerto = MenuItem(name="Pan de Muerto", category="Especiales")
         pan_muerto.variants = [
-            MenuItemVariant(variant_name="Tradicional", price=50.0, remaining=12, status="available")
+            MenuItemVariant(variant_name="Tradicional", price=50.0, remaining=12, status="temporada")
         ]
 
         # 4. Cupcake (Single variant)
         cupcake = MenuItem(name="Cupcake de Naranja", category="Cupcakes")
         cupcake.variants = [
-            MenuItemVariant(variant_name="Estándar", price=30.0, remaining=10, status="available")
+            MenuItemVariant(variant_name="Estándar", price=30.0, remaining=10, status="agotado")
         ]
 
         # Add all to session and commit
