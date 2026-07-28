@@ -1,0 +1,50 @@
+/* Container layout to center everything on the page */
+.contact-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh; /* Adjust height based on your base navbar/footer */
+    text-align: center;
+    padding: 20px;
+}
+
+/* Logo styling */
+.logo-wrapper {
+    margin-bottom: 1.5rem;
+}
+
+.contact-logo {
+    width: 160px;
+    height: auto;
+    display: block;
+}
+
+/* Heading styling */
+.contact-title {
+    color: #5572C4; /* Soft blue color */
+    font-family: 'Playfair Display', Georgia, serif; /* Heavy serif style */
+    font-size: 3.8rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0 0 2rem 0;
+    text-transform: uppercase;
+}
+
+/* Button styling */
+.contact-btn {
+    display: inline-block;
+    background-color: #E2C3EA; /* Soft purple */
+    color: #523166; /* Darker purple for text contrast */
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 0.85rem 2.5rem;
+    border-radius: 50px; /* Pill shape */
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.contact-btn:hover {
+    background-color: #d8b2e2;
+    transform: translateY(-2px);
+}
