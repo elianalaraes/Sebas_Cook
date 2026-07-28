@@ -293,6 +293,8 @@ body {
     font-size: 0.9rem;
 }
 
+
+
 /* --- Responsivo: Pasar a 1 sola columna en dispositivos móviles --- */
 @media (max-width: 768px) {
     .menu-grid,

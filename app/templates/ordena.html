@@ -36,7 +36,7 @@
                 <img src="{{ url_for('static', filename='images/' ~ item.name.lower().replace(' ', '_') ~ '.png') }}"
                      alt="{{ item.name }}"
                      class="card-img"
-                     onerror="this.src='{{ url_for('static', filename='images/sebas_cook_logo.png') }}';">
+                     >
 
                 <div class="card-info">
                     <h3 class="product-name">{{ item.name }}</h3>
@@ -60,8 +60,12 @@
                                         (Temporada)
                                     {% elif is_v_sold_out %}
                                         (Agotado)
+                                    {%elif variant.remaining <=5  %}
+                                       ¡Quedán {{ variant.remaining }}!
                                     {% endif %}
                                 </button>
+
+
                             {% endfor %}
                         </div>
                     {% endif %}

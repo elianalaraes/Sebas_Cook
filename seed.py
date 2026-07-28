@@ -15,7 +15,7 @@ def seed_database():
         # 1. Roles de Canela
         roles = MenuItem(name="Rol de Canela", category="Roles")
         roles.variants = [
-            MenuItemVariant(variant_name="Sencillo", price=55.0, remaining=10, status="available"),
+            MenuItemVariant(variant_name="Sencillo", price=55.0, remaining=5, status="available"),
             MenuItemVariant(variant_name="Pistache", price=55.0, remaining=10, status="available"),
             MenuItemVariant(variant_name="Nutella", price=55.0, remaining=10, status="available"),
         ]
