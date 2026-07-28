@@ -1,18 +1,16 @@
 {% extends 'base.html' %}
-{% block content %}
-<html>
-<body>
-    <main>
-        <div class="hero-text-section">
-            <h1 class="hero-title">SEBAS COOK</h1>
-            <a href="#" class="hero-btn">Ordena ya</a>
-        </div>
 
-        <div class="hero-image-container">
-            <!-- Replace-->
-            <img src="panda-chef.png" alt="Panda Chef Mascot" onerror="this.style.display='none'">
-        </div>
-    </main>
-</body>
-</html>
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+
+<main>
+    <div class="hero-text-section">
+        <h1 class="hero-title">SEBAS COOK</h1>
+        <a href="#" class="hero-btn">Ordena ya</a>
+    </div>
+
+    <div class="hero-image-container">
+        <img src="{{ url_for('static', filename='images/panda.png') }}" alt="Mascota">
+    </div>
+</main>
 {% endblock %}
