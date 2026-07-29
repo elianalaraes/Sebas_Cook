@@ -50,10 +50,11 @@
                                 {% set is_v_disabled = is_v_seasonal or is_v_sold_out or is_disabled %}
 
                                 <button type="button"
-                                        class="pill-btn {% if is_v_disabled %}sold-out-pill{% elif loop.first %}active{% endif %}"
+                                        class="pill-btn {% if is_v_disabled %}sold-out-pill{% endif %}"
                                         data-price="{{ variant.price }}"
                                         data-variant-name="{{ variant.variant_name }}"
                                         data-variant-status="{{ variant.status }}"
+                                        data-remaining="{{ variant.remaining }}"
                                         {% if is_v_disabled %}data-sold-out="true" disabled{% endif %}>
                                     {{ variant.variant_name }}
                                     {% if is_v_seasonal %}

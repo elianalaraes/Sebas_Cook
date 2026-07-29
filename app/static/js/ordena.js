@@ -47,6 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Verificar si la variante/sabor seleccionado está deshabilitado
                 const activePill = card.querySelector('.pill-btn.active');
+                if (!activePill) {
+                    alert("Selecciona un sabor.");
+                    return;
+                }
                 if (activePill && (activePill.hasAttribute('disabled') || activePill.getAttribute('data-sold-out') === 'true')) {
                     return;
                 }
@@ -56,6 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (!selections[key]) {
                     selections[key] = { ...info, count: 0 };
+                }
+
+                const remaining = parseInt(activePill.dataset.remaining);
+
+                if (selections[key].count >= remaining) {
+                    alert(`Solo quedan ${remaining} disponibles.`);
+                    return;
                 }
 
                 selections[key].count += 1;
@@ -86,8 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function getActiveVariantKey(card) {
         const itemId = card.getAttribute('data-item-id');
         const activePill = card.querySelector('.pill-btn.active');
-        const variantName = activePill ? activePill.getAttribute('data-variant-name') : 'Standard';
-        return `${itemId}_${variantName}`;
+
+        if (!activePill) {
+            return null;
+        }
+
+        return `${itemId}_${activePill.getAttribute('data-variant-name')}`;
     }
 
     function getActiveVariantInfo(card) {
