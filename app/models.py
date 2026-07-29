@@ -29,3 +29,71 @@ class MenuItemVariant(db.Model):
 
     def __repr__(self):
         return f'<MenuItemVariant {self.variant_name} - ${self.price}>'
+
+
+class Order(db.Model):
+    __tablename__ = 'orders'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    nombre = db.Column(db.String(100), nullable=False)
+    telefono = db.Column(db.String(20), nullable=False)
+    notas = db.Column(db.String(255), nullable=True)
+
+    total = db.Column(db.Float, nullable=False, default=0)
+
+    status = db.Column(
+        db.String(20),
+        default='pending'
+    )  # pending, completed, cancelled
+
+    created_at = db.Column(
+        db.DateTime,
+        default=db.func.current_timestamp()
+    )
+
+    # productos del pedido
+    items = db.relationship(
+        'OrderItem',
+        backref='order',
+        cascade="all, delete-orphan",
+        lazy=True
+    )
+
+
+class OrderItem(db.Model):
+    __tablename__ = 'order_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    order_id = db.Column(
+        db.Integer,
+        db.ForeignKey('orders.id'),
+        nullable=False
+    )
+
+    variant_id = db.Column(
+        db.Integer,
+        db.ForeignKey('menu_item_variants.id'),
+        nullable=False
+    )
+
+    quantity = db.Column(
+        db.Integer,
+        nullable=False
+    )
+
+    # guardamos el precio de ese momento
+    # por si después cambia el precio del menú
+    price = db.Column(
+        db.Float,
+        nullable=False
+    )
+
+    variant = db.relationship(
+        'MenuItemVariant'
+    )
+
+
+    def subtotal(self):
+        return self.quantity * self.price

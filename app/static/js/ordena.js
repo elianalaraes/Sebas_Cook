@@ -139,6 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        document.getElementById('order-items').value =
+        JSON.stringify(Object.values(selections));
+
         receiptTotal.textContent = `$${total}`;
     }
 });
