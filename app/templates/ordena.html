@@ -103,20 +103,27 @@
 
         <div class="form-column">
             <form class="order-form" method="POST">
+                {{ form.hidden_tag() }}
+
                 <h2>Formulario</h2>
+
                 <div class="form-group">
-                    <label for="nombre">Nombre</label>
-                    <input type="text" id="nombre" name="nombre" required>
+                    {{ form.nombre.label }}
+                    {{ form.nombre(class="form-control") }}
                 </div>
+
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" name="email" required>
+                    {{ form.telefono.label }}
+                    {{ form.telefono(class="form-comtrol") }}
                 </div>
+
                 <div class="form-group">
-                    <label for="notas">Notas</label>
-                    <input type="text" id="notas" name="notas">
+                    {{ form.notas.label }}
+                    {{ form.notas(class="form-control") }}
                 </div>
-                <button type="submit" class="btn-submit">Pedir</button>
+
+                {{ form.submit(class="btn-submit") }}
+
             </form>
 
             <div class="payment-notice">
