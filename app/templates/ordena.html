@@ -4,6 +4,20 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/ordena.css') }}">
 
 <main class="page-layout">
+
+    <!-- Contenedor para Mensajes Flash -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
     <h1 class="main-title">MENÚ</h1>
 
     <section class="menu-grid">
@@ -35,8 +49,7 @@
                 <!-- Imagen del producto -->
                 <img src="{{ url_for('static', filename='images/' ~ item.name.lower().replace(' ', '_') ~ '.png') }}"
                      alt="{{ item.name }}"
-                     class="card-img"
-                     >
+                     class="card-img">
 
                 <div class="card-info">
                     <h3 class="product-name">{{ item.name }}</h3>
@@ -61,12 +74,10 @@
                                         (Temporada)
                                     {% elif is_v_sold_out %}
                                         (Agotado)
-                                    {%elif variant.remaining <=5  %}
+                                    {% elif variant.remaining <= 5 %}
                                        ¡Quedán {{ variant.remaining }}!
                                     {% endif %}
                                 </button>
-
-
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -102,7 +113,7 @@
         </div>
 
         <div class="form-column">
-            <form class="order-form" method="POST">
+            <form class="order-form" method="POST" novalidate>
                 {{ form.hidden_tag() }}
 
                 <h2>Formulario</h2>
@@ -110,11 +121,21 @@
                 <div class="form-group">
                     {{ form.nombre.label }}
                     {{ form.nombre(class="form-control") }}
+
+                    <!-- Corrección: errors en lugar de erros -->
+                    {% for error in form.nombre.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
                 </div>
 
                 <div class="form-group">
                     {{ form.telefono.label }}
-                    {{ form.telefono(class="form-comtrol") }}
+                    <!-- Corrección: form-control en lugar de form-comtrol -->
+                    {{ form.telefono(class="form-control") }}
+
+                    {% for error in form.telefono.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
                 </div>
 
                 <div class="form-group">
@@ -125,7 +146,6 @@
                 <input type="hidden" id="order-items" name="order_items">
 
                 {{ form.submit(class="btn-submit") }}
-
             </form>
 
             <div class="payment-notice">

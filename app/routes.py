@@ -1,6 +1,6 @@
 import json
 from . import db
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from app.models import MenuItem, OrderItem, Order, MenuItemVariant
 from app.forms import OrderForm
 
@@ -20,9 +20,14 @@ def ordena():
     form = OrderForm()
 
     if form.validate_on_submit():
-        items = json.loads(
-            request.form.get('order_items')
-        )
+        order_items_raw = request.form.get("order_items")
+
+        # Validar si el carrito está vacío o contiene una lista vacía "[]"
+        if not order_items_raw or order_items_raw == "[]":
+            flash("Debes agregar al menos un producto al pedido.", "danger")
+            return render_template("ordena.html", form=form, menu_items=menu_items)
+
+        items = json.loads(order_items_raw)
 
         order = Order(
             nombre=form.nombre.data,
@@ -41,28 +46,33 @@ def ordena():
                 variant_name=item['variantName']
             ).first()
 
-            order_item = OrderItem(
-                order_id=order.id,
-                variant_id=variant.id,
-                quantity=item['count'],
-                price=item['price']
-            )
+            if variant:
+                order_item = OrderItem(
+                    order_id=order.id,
+                    variant_id=variant.id,
+                    quantity=item['count'],
+                    price=item['price']
+                )
 
-            total += item['price'] * item['count']
+                total += item['price'] * item['count']
 
-            # descontar inventario
-            variant.remaining -= item['count']
+                # Descontar inventario
+                variant.remaining -= item['count']
 
-            db.session.add(order_item)
+                db.session.add(order_item)
 
         order.total = total
+        db.session.commit()
 
-        db.session.commit() # esto se debería cambiar de aquí a models
+        flash("¡Tu pedido ha sido registrado con éxito!", "success")
+        return redirect(url_for('main.ordena'))
+
+    else:
+        if request.method == "POST":
+            flash("Por favor completa todos los campos obligatorios.", "danger")
 
     return render_template('ordena.html', menu_items=menu_items, form=form)
 
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
     return render_template('contact.html')
-
-

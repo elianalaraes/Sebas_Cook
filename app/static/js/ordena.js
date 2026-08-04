@@ -4,6 +4,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const selections = {};
 
+    // Función para mostrar alertas en lugar del alert() nativo del navegador
+    function showFlashMessage(message, category = 'danger') {
+        const flashContainer = document.querySelector('.flash-messages');
+        if (!flashContainer) return;
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${category}`;
+        alertDiv.textContent = message;
+
+        flashContainer.appendChild(alertDiv);
+
+        // Auto-eliminar la alerta tras 4 segundos
+        setTimeout(() => {
+            alertDiv.style.transition = "all 0.4s ease";
+            alertDiv.style.opacity = "0";
+            alertDiv.style.transform = "translateY(-10px) scale(0.9)";
+            setTimeout(() => alertDiv.remove(), 400);
+        }, 4000);
+    }
+
     // 1. Manejo de botones de variante/sabor
     document.querySelectorAll('.pill-btn').forEach(button => {
         button.addEventListener('click', (e) => {
@@ -48,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Verificar si la variante/sabor seleccionado está deshabilitado
                 const activePill = card.querySelector('.pill-btn.active');
                 if (!activePill) {
-                    alert("Selecciona un sabor.");
+                    showFlashMessage("Por favor, selecciona un sabor primero.", "danger");
                     return;
                 }
                 if (activePill && (activePill.hasAttribute('disabled') || activePill.getAttribute('data-sold-out') === 'true')) {
@@ -65,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const remaining = parseInt(activePill.dataset.remaining);
 
                 if (selections[key].count >= remaining) {
-                    alert(`Solo quedan ${remaining} disponibles.`);
+                    showFlashMessage(`Solo quedan ${remaining} disponibles de este sabor.`, "danger");
                     return;
                 }
 
