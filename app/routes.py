@@ -1,8 +1,8 @@
-import json
-from . import db
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app.models import MenuItem, OrderItem, Order, MenuItemVariant
-from app.forms import OrderForm
+from flask_login import login_user, logout_user, login_required, current_user
+from app.models import Admin, Order, MenuItem
+from app.forms import LoginForm, OrderForm, PasswordField
+from . import db
 
 main = Blueprint('main', __name__)
 
@@ -76,3 +76,43 @@ def ordena():
 @main.route('/contact', methods=['GET', 'POST'])
 def contact():
     return render_template('contact.html')
+
+
+@main.route('/login', methods=['GET', 'POST'])
+def login():
+
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        username = form.username.data
+        password = form.password.data
+
+        admin = Admin.query.filter_by(username=username).first()
+
+        if admin and admin.check_password(password):
+            login_user(admin)
+            flash("¡Bienvenido al Panel de Control!", "success")
+
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('main.dashboard'))
+        else:
+            flash("Usuario o contraseña incorrectos.", "danger")
+
+    return render_template('login.html', form=form)
+
+
+@main.route('/dashboard', methods=['GET'])
+@login_required
+def dashboard():
+    orders = Order.query.order_by(Order.created_at.desc()).all()
+    return render_template('dashboard.html', orders=orders)
+
+
+@main.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    flash("Has cerrado sesión correctamente.", "info")
+    return redirect(url_for('main.login'))
+
+
