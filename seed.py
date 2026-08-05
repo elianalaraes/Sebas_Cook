@@ -1,6 +1,6 @@
 from app import create_app
 from app import db
-from app.models import MenuItem, MenuItemVariant
+from app.models import MenuItem, MenuItemVariant, Admin
 
 app = create_app()
 
@@ -39,9 +39,23 @@ def seed_database():
             MenuItemVariant(variant_name="Estándar", price=30.0, remaining=10, status="agotado")
         ]
 
+
+
         # Add all to session and commit
         db.session.add_all([roles, galletas, pan_muerto, cupcake])
         db.session.commit()
+
+        # 1. Crear la instancia solo con los atributos del modelo
+        admin = Admin(username="sebas")
+
+        # 2. Generar y asignar el hash de la contraseña
+        admin.set_password("123")
+
+        # 3. Guardar en la base de datos
+        db.session.add(admin)
+        db.session.commit()
+
+
 
         print("Successfully seeded the database!")
 
