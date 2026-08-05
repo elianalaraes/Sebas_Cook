@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+
+<main class="login-container">
+
+    <!-- Contenedor de Alertas Flash arriba -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Logo del Admin -->
+    <div class="logo-wrapper">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Admin" class="login-logo">
+    </div>
+
+    <!-- Título Serif Grande -->
+    <h1 class="login-title">PANEL ADMIN</h1>
+
+    <!-- Formulario de Login -->
+    <form class="login-form" method="POST" action="{{ url_for('main.login') }}" novalidate>
+        {{ form.hidden_tag() if form else '' }}
+
+        <div class="form-group">
+            <label for="username" class="form-label">Usuario</label>
+            <input type="text" id="username" name="username" class="form-input" placeholder="Ingresa tu usuario" required>
+            {% if form and form.username.errors %}
+                {% for error in form.username.errors %}
+                    <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" id="password" name="password" class="form-input" placeholder="••••••••" required>
+            {% if form and form.password.errors %}
+                {% for error in form.password.errors %}
+                    <small class="text-danger">{{ error }}</small>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <button type="submit" class="login-btn">Entrar</button>
+    </form>
+</main>
+{% endblock %}
