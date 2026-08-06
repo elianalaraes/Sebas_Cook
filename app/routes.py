@@ -81,6 +81,9 @@ def contact():
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.dashboard'))
+
 
     form = LoginForm()
 
@@ -108,6 +111,44 @@ def logout():
     logout_user()
     flash("Has cerrado sesión correctamente.", "info")
     return redirect(url_for('main.login'))
+
+
+# --- GESTIÓN DE STOCK E INVENTARIO ---
+
+@main.route('/stock', methods=['GET'])
+@login_required
+def manage_stock():
+    # Cargar todos los productos con sus variantes
+    menu_items = MenuItem.query.all()
+    return render_template('stock.html', menu_items=menu_items)
+
+
+@main.route('/admin/stock/update', methods=['POST'])
+@login_required
+def update_stock():
+    # 1. Actualizar Estados de Productos Principales
+    items = MenuItem.query.all()
+    for item in items:
+        new_item_status = request.form.get(f'item_status_{item.id}')
+        if new_item_status in ['disponible', 'sold_out', 'seasonal']:
+            item.status = new_item_status
+
+    # 2. Actualizar Stock y Estados de Variantes
+    variants = MenuItemVariant.query.all()
+    for variant in variants:
+        # Actualizar estado de variante
+        new_variant_status = request.form.get(f'variant_status_{variant.id}')
+        if new_variant_status in ['disponible', 'sold_out', 'seasonal']:
+            variant.status = new_variant_status
+
+        # Actualizar cantidad disponible (remaining)
+        new_remaining = request.form.get(f'variant_remaining_{variant.id}')
+        if new_remaining is not None and new_remaining.isdigit():
+            variant.remaining = int(new_remaining)
+
+    db.session.commit()
+    flash("¡El inventario y los estados del menú se actualizaron correctamente!", "success")
+    return redirect(url_for('main.manage_stock'))
 
 
 # --- DASHBOARD & GESTIÓN DE PEDIDOS ---
