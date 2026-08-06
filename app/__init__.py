@@ -14,8 +14,8 @@ def create_app():
 
     login_manager.init_app(app)
     login_manager.login_view = 'main.login'
-    login_manager.login_message = 'Por favor inicia sesión para acceder.'
-    login_manager.login_message_category = 'danger'
+    login_message = 'Por favor inicia sesión para acceder.'
+    login_message_category = 'danger'
 
     from app.models import Admin, MenuItem, MenuItemVariant
 
@@ -30,9 +30,9 @@ def create_app():
         from . import models
         db.create_all()
 
-        # SEED AUTOMÁTICO: Solo se ejecuta la primera vez si no hay productos ni admin
-        if not Admin.query.filter_by(username='sebas').first():
-            print("--- Poblando la base de datos por primera vez ---")
+        # REVISAR SI EL MENÚ ESTÁ VACÍO (En lugar de revisar solo el Admin)
+        if MenuItem.query.count() == 0:
+            print("--- Poblando los productos del menú por primera vez ---")
 
             # 1. Roles de Canela
             roles = MenuItem(name="Rol de Canela", category="Roles", status="disponible")
@@ -64,12 +64,13 @@ def create_app():
             # Guardar menú
             db.session.add_all([roles, galletas, pan_muerto, cupcake])
 
-            # Guardar Administrador
-            admin = Admin(username="sebas")
-            admin.set_password("123")
-            db.session.add(admin)
+            # Crear Admin solo si tampoco existe
+            if not Admin.query.filter_by(username='sebas').first():
+                admin = Admin(username="sebas")
+                admin.set_password("123")
+                db.session.add(admin)
 
             db.session.commit()
-            print("--- Base de datos inicializada con éxito ---")
+            print("--- ¡Productos guardados exitosamente en la base de datos! ---")
 
     return app
