@@ -24,6 +24,7 @@ class MenuItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False, unique=True)
     category = db.Column(db.String(50), nullable=True)  # e.g., 'Roles', 'Galletas', 'Cupcakes'
+    status = db.Column(db.String(20), default='disponible')
 
     # Relationship to variants (e.g. Rol de Canela -> [Sencillo, Pistache, Nutella])
     variants = db.relationship('MenuItemVariant', backref='item', lazy=True, cascade="all, delete-orphan")
