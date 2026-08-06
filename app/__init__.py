@@ -17,7 +17,7 @@ def create_app():
     login_manager.login_message = 'Por favor inicia sesión para acceder.'
     login_manager.login_message_category = 'danger'
 
-    from app.models import Admin
+    from app.models import Admin, MenuItem, MenuItemVariant
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -26,19 +26,50 @@ def create_app():
     from .routes import main
     app.register_blueprint(main)
 
-    # Crea las tablas automáticamente al levantar la app si aún no existen en la BD
     with app.app_context():
         from . import models
-        from app.models import Admin  # Importamos el modelo Admin
+        db.create_all()
 
-        db.create_all()  # Crea las tablas en PostgreSQL si no existen
-
-        # CREAR ADMINISTRADOR AUTOMÁTICAMENTE SI LA BASE DE DATOS ESTÁ VACÍA
+        # SEED AUTOMÁTICO: Solo se ejecuta la primera vez si no hay productos ni admin
         if not Admin.query.filter_by(username='sebas').first():
-            admin = Admin(username='sebas')
-            admin.set_password('123')  # Puedes cambiar la contraseña aquí
+            print("--- Poblando la base de datos por primera vez ---")
+
+            # 1. Roles de Canela
+            roles = MenuItem(name="Rol de Canela", category="Roles", status="disponible")
+            roles.variants = [
+                MenuItemVariant(variant_name="Sencillo", price=55.0, remaining=5, status="disponible"),
+                MenuItemVariant(variant_name="Pistache", price=55.0, remaining=10, status="disponible"),
+                MenuItemVariant(variant_name="Nutella", price=55.0, remaining=10, status="disponible"),
+            ]
+
+            # 2. Galletas
+            galletas = MenuItem(name="Galleta", category="Galletas", status="disponible")
+            galletas.variants = [
+                MenuItemVariant(variant_name="Red Velvet", price=15.0, remaining=0, status="sold_out"),
+                MenuItemVariant(variant_name="Chispas de Chocolate", price=15.0, remaining=20, status="disponible"),
+            ]
+
+            # 3. Pan de Muerto
+            pan_muerto = MenuItem(name="Pan de Muerto", category="Especiales", status="seasonal")
+            pan_muerto.variants = [
+                MenuItemVariant(variant_name="Tradicional", price=50.0, remaining=12, status="seasonal")
+            ]
+
+            # 4. Cupcake
+            cupcake = MenuItem(name="Cupcake de Naranja", category="Cupcakes", status="sold_out")
+            cupcake.variants = [
+                MenuItemVariant(variant_name="Estándar", price=30.0, remaining=0, status="sold_out")
+            ]
+
+            # Guardar menú
+            db.session.add_all([roles, galletas, pan_muerto, cupcake])
+
+            # Guardar Administrador
+            admin = Admin(username="sebas")
+            admin.set_password("123")
             db.session.add(admin)
+
             db.session.commit()
-            print("--- Usuario Administrador 'sebas' creado automáticamente ---")
+            print("--- Base de datos inicializada con éxito ---")
 
     return app
