@@ -17,7 +17,6 @@ def create_app():
     login_manager.login_message = 'Por favor inicia sesión para acceder.'
     login_manager.login_message_category = 'danger'
 
-
     from app.models import Admin
 
     @login_manager.user_loader
@@ -27,6 +26,7 @@ def create_app():
     from .routes import main
     app.register_blueprint(main)
 
+    # Crea las tablas automáticamente al levantar la app si aún no existen en la BD
     with app.app_context():
         from . import models
         db.create_all()
