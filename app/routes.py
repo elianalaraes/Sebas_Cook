@@ -1,6 +1,7 @@
+import json
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import Admin, Order, MenuItem
+from app.models import Admin, Order, MenuItem, MenuItemVariant, OrderItem
 from app.forms import LoginForm, OrderForm, PasswordField
 from . import db
 
@@ -101,13 +102,6 @@ def login():
     return render_template('login.html', form=form)
 
 
-@main.route('/dashboard', methods=['GET'])
-@login_required
-def dashboard():
-    orders = Order.query.order_by(Order.created_at.desc()).all()
-    return render_template('dashboard.html', orders=orders)
-
-
 @main.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
@@ -116,3 +110,54 @@ def logout():
     return redirect(url_for('main.login'))
 
 
+# --- DASHBOARD & GESTIÓN DE PEDIDOS ---
+
+@main.route('/dashboard', methods=['GET'])
+@login_required
+def dashboard():
+    # Obtener el filtro activo desde el query param (?status=...)
+    status_filter = request.args.get('status', 'todos')
+
+    query = Order.query
+    if status_filter != 'todos':
+        query = query.filter_by(status=status_filter)
+
+    orders = query.order_by(Order.created_at.desc()).all()
+
+    # Contadores para las métricas rápidas del dashboard
+    stats = {
+        'todos': Order.query.count(),
+        'pendiente': Order.query.filter_by(status='pendiente').count(),
+        'aceptado': Order.query.filter_by(status='aceptado').count(),
+        'en_proceso': Order.query.filter_by(status='en_proceso').count(),
+        'en_delivery': Order.query.filter_by(status='en_delivery').count(),
+        'completado': Order.query.filter_by(status='completado').count(),
+    }
+
+    return render_template('dashboard.html', orders=orders, stats=stats, current_status=status_filter)
+
+
+@main.route('/admin/order/<int:order_id>/update-status', methods=['POST'])
+@login_required
+def update_order_status(order_id):
+    order = Order.query.get_or_404(order_id)
+    new_status = request.form.get('status')
+
+    valid_statuses = ['pendiente', 'aceptado', 'en_proceso', 'en_delivery', 'completado']
+    if new_status in valid_statuses:
+        order.status = new_status
+        db.session.commit()
+        flash(f"Estado del pedido #{order.id} actualizado a '{new_status.replace('_', ' ').capitalize()}'.", "success")
+    else:
+        flash("Estado inválido.", "danger")
+
+    return redirect(request.referrer or url_for('main.dashboard'))
+
+@main.route('/admin/order/<int:order_id>/delete', methods=['POST'])
+@login_required
+def delete_order(order_id):
+    order = Order.query.get_or_404(order_id)
+    db.session.delete(order)
+    db.session.commit()
+    flash(f"El pedido #{order_id} ha sido eliminado permanentemente.", "info")
+    return redirect(url_for('main.dashboard'))
