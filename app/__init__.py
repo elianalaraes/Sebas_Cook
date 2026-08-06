@@ -28,49 +28,50 @@ def create_app():
 
     with app.app_context():
         from . import models
+        from app.models import Admin, MenuItem, MenuItemVariant
+
+        # 1. Elimina todas las tablas de PostgreSQL (para limpiar la estructura vieja)
+        db.reflect()
+        db.drop_all()
+
+        # 2. Crea las tablas desde cero según tu models.py actual (sin status en MenuItem)
         db.create_all()
 
-        # REVISAR SI EL MENÚ ESTÁ VACÍO (En lugar de revisar solo el Admin)
-        if MenuItem.query.count() == 0:
-            print("--- Poblando los productos del menú por primera vez ---")
+        print("--- Poblando catálogo de productos en la base de datos ---")
 
-            # 1. Roles de Canela
-            roles = MenuItem(name="Rol de Canela", category="Roles", status="disponible")
-            roles.variants = [
-                MenuItemVariant(variant_name="Sencillo", price=55.0, remaining=5, status="disponible"),
-                MenuItemVariant(variant_name="Pistache", price=55.0, remaining=10, status="disponible"),
-                MenuItemVariant(variant_name="Nutella", price=55.0, remaining=10, status="disponible"),
-            ]
+        # 3. Crear productos
+        roles = MenuItem(name="Rol de Canela", category="Roles")
+        roles.variants = [
+            MenuItemVariant(variant_name="Sencillo", price=55.0, remaining=5, status="available"),
+            MenuItemVariant(variant_name="Pistache", price=55.0, remaining=10, status="available"),
+            MenuItemVariant(variant_name="Nutella", price=55.0, remaining=10, status="available"),
+        ]
 
-            # 2. Galletas
-            galletas = MenuItem(name="Galleta", category="Galletas", status="disponible")
-            galletas.variants = [
-                MenuItemVariant(variant_name="Red Velvet", price=15.0, remaining=0, status="sold_out"),
-                MenuItemVariant(variant_name="Chispas de Chocolate", price=15.0, remaining=20, status="disponible"),
-            ]
+        galletas = MenuItem(name="Galleta", category="Galletas")
+        galletas.variants = [
+            MenuItemVariant(variant_name="Red Velvet", price=15.0, remaining=0, status="sold_out"),
+            MenuItemVariant(variant_name="Chispas de Chocolate", price=15.0, remaining=20, status="available"),
+        ]
 
-            # 3. Pan de Muerto
-            pan_muerto = MenuItem(name="Pan de Muerto", category="Especiales", status="seasonal")
-            pan_muerto.variants = [
-                MenuItemVariant(variant_name="Tradicional", price=50.0, remaining=12, status="seasonal")
-            ]
+        pan_muerto = MenuItem(name="Pan de Muerto", category="Especiales")
+        pan_muerto.variants = [
+            MenuItemVariant(variant_name="Tradicional", price=50.0, remaining=12, status="available")
+        ]
 
-            # 4. Cupcake
-            cupcake = MenuItem(name="Cupcake de Naranja", category="Cupcakes", status="sold_out")
-            cupcake.variants = [
-                MenuItemVariant(variant_name="Estándar", price=30.0, remaining=0, status="sold_out")
-            ]
+        cupcake = MenuItem(name="Cupcake de Naranja", category="Cupcakes")
+        cupcake.variants = [
+            MenuItemVariant(variant_name="Estándar", price=30.0, remaining=0, status="sold_out")
+        ]
 
-            # Guardar menú
-            db.session.add_all([roles, galletas, pan_muerto, cupcake])
+        db.session.add_all([roles, galletas, pan_muerto, cupcake])
 
-            # Crear Admin solo si tampoco existe
-            if not Admin.query.filter_by(username='sebas').first():
-                admin = Admin(username="sebas")
-                admin.set_password("123")
-                db.session.add(admin)
+        # 4. Crear Administrador
+        admin = Admin(username="sebas")
+        admin.set_password("123")
+        db.session.add(admin)
 
-            db.session.commit()
-            print("--- ¡Productos guardados exitosamente en la base de datos! ---")
+        # 5. Guardar cambios
+        db.session.commit()
+        print("--- ¡Base de datos reconstruida y poblada con éxito! ---")
 
     return app
