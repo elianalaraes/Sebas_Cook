@@ -29,6 +29,16 @@ def create_app():
     # Crea las tablas automáticamente al levantar la app si aún no existen en la BD
     with app.app_context():
         from . import models
-        db.create_all()
+        from app.models import Admin  # Importamos el modelo Admin
+
+        db.create_all()  # Crea las tablas en PostgreSQL si no existen
+
+        # CREAR ADMINISTRADOR AUTOMÁTICAMENTE SI LA BASE DE DATOS ESTÁ VACÍA
+        if not Admin.query.filter_by(username='sebas').first():
+            admin = Admin(username='sebas')
+            admin.set_password('123')  # Puedes cambiar la contraseña aquí
+            db.session.add(admin)
+            db.session.commit()
+            print("--- Usuario Administrador 'sebas' creado automáticamente ---")
 
     return app
