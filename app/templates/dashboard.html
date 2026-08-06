@@ -1,3 +1,4 @@
+
 {% extends 'base.html' %}
 
 {% block content %}
@@ -10,7 +11,12 @@
         <div>
             <h1 class="dashboard-title">Panel de Control</h1>
         </div>
-        <a href="{{ url_for('main.logout') }}" class="logout-btn">Cerrar Sesión</a>
+
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <a href="{{ url_for('main.manage_stock') }}" class="stock-btn">Gestionar Stock</a>
+            <a href="{{ url_for('main.logout') }}" class="logout-btn">Cerrar Sesión</a>
+        </div>
+
 
     </header>
 
