@@ -12,12 +12,12 @@
             <div class="logo-img">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo Sebas Cook">
             </div>
-            <span class="logo-text">Sebas Cook</span>
+            <a href="{{ url_for('main.landing') }}" class="logo-text">Sebas Cook</a>
         </div>
         <nav class="nav-links">
             <a href="{{ url_for('main.ordena') }}" class="nav-btn">Ordena</a>
-            <a href="contacto.html" class="nav-btn">Contacto</a>
-            <a href="admin.html" class="nav-btn">Admin</a>
+            <a href="{{ url_for('main.contact') }}" class="nav-btn">Contacto</a>
+            <a href="{{ url_for('main.login') }}" class="nav-btn">Admin</a>
         </nav>
     </header>
 

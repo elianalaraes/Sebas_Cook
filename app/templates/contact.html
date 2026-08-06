@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
+
+<main class="contact-container">
+    <!-- Logo -->
+    <div class="logo-wrapper">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Sebas Cook Logo" class="contact-logo">
+    </div>
+
+    <!-- Main Title -->
+    <h1 class="contact-title">¿PREGUNTAS?</h1>
+
+    <!-- Action Button / Link -->
+    <a href="tel:+525513045960" class="contact-btn">
+        ¡Contáctame al 55 1304 5960!
+    </a>
+</main>
+{% endblock %}

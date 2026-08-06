@@ -1,1 +1,159 @@
-here
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ordena.css') }}">
+
+<main class="page-layout">
+
+    <!-- Contenedor para Mensajes Flash -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <h1 class="main-title">MENÚ</h1>
+
+    <section class="menu-grid">
+        {% for item in menu_items %}
+            {% set first_variant = item.variants[0] if item.variants else None %}
+
+            <!-- 1. Verificar si el producto GENERAL está deshabilitado -->
+            {% set is_item_seasonal = item.status in ['seasonal', 'temporada'] %}
+            {% set is_item_sold_out = item.status in ['sold_out', 'agotado'] %}
+
+            <!-- 2. Verificar si TODAS las variantes del producto están deshabilitadas -->
+            {% set all_variants_seasonal = item.variants|length > 0 and item.variants|rejectattr('status', 'in', ['seasonal', 'temporada'])|list|length == 0 %}
+            {% set all_variants_sold_out = item.variants|length > 0 and item.variants|rejectattr('status', 'in', ['sold_out', 'agotado'])|list|length == 0 %}
+
+            <!-- Estado global consolidado -->
+            {% set is_seasonal = is_item_seasonal or all_variants_seasonal %}
+            {% set is_sold_out = is_item_sold_out or all_variants_sold_out %}
+            {% set is_disabled = is_seasonal or is_sold_out %}
+
+            <div class="card {% if loop.index % 2 == 0 %}card-purple{% else %}card-blue{% endif %} {% if is_disabled %}has-overlay{% endif %}"
+                 data-item-id="{{ item.id }}"
+                 data-item-status="{% if is_seasonal %}temporada{% elif is_sold_out %}agotado{% else %}{{ item.status }}{% endif %}">
+
+                <!-- Ocultar badge de precio si todo el producto está deshabilitado -->
+                {% if first_variant and not is_disabled %}
+                    <div class="price-badge" data-price="{{ first_variant.price }}">{{ first_variant.price|int }}$</div>
+                {% endif %}
+
+                <!-- Imagen del producto -->
+                <img src="{{ url_for('static', filename='images/' ~ item.name.lower().replace(' ', '_') ~ '.png') }}"
+                     alt="{{ item.name }}"
+                     class="card-img">
+
+                <div class="card-info">
+                    <h3 class="product-name">{{ item.name }}</h3>
+
+                    <!-- Sabores / Variantes -->
+                    {% if item.variants|length > 0 %}
+                        <div class="pill-group">
+                            {% for variant in item.variants %}
+                                {% set is_v_seasonal = variant.status in ['seasonal', 'temporada'] %}
+                                {% set is_v_sold_out = variant.status in ['sold_out', 'agotado'] or variant.remaining <= 0 %}
+                                {% set is_v_disabled = is_v_seasonal or is_v_sold_out or is_disabled %}
+
+                                <button type="button"
+                                        class="pill-btn {% if is_v_disabled %}sold-out-pill{% endif %}"
+                                        data-price="{{ variant.price }}"
+                                        data-variant-name="{{ variant.variant_name }}"
+                                        data-variant-status="{{ variant.status }}"
+                                        data-remaining="{{ variant.remaining }}"
+                                        {% if is_v_disabled %}data-sold-out="true" disabled{% endif %}>
+                                    {{ variant.variant_name }}
+                                    {% if is_v_seasonal %}
+                                        (Temporada)
+                                    {% elif is_v_sold_out %}
+                                        (Agotado)
+                                    {% elif variant.remaining <= 5 %}
+                                       ¡Quedán {{ variant.remaining }}!
+                                    {% endif %}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Control de cantidad -->
+                <div class="counter-control">
+                    <button type="button" class="btn-counter btn-plus" {% if is_disabled %}disabled{% endif %}>+</button>
+                    <span class="count-val">0</span>
+                    <button type="button" class="btn-counter btn-minus" {% if is_disabled %}disabled{% endif %}>-</button>
+                </div>
+
+                <!-- Cintas de Estado -->
+                {% if is_seasonal %}
+                    <div class="status-ribbon season-ribbon">Solo por temporada!</div>
+                {% elif is_sold_out %}
+                    <div class="status-ribbon soldout-ribbon">Agotado</div>
+                {% endif %}
+
+            </div>
+        {% endfor %}
+    </section>
+
+    <!-- Recibo y Formulario -->
+    <section class="checkout-grid">
+        <div class="receipt-card">
+            <h2 class="receipt-title">Recibo</h2>
+            <div class="receipt-items" id="receipt-list"></div>
+            <div class="receipt-footer">
+                <span>Total</span>
+                <span id="receipt-total">$0</span>
+            </div>
+        </div>
+
+        <div class="form-column">
+            <form class="order-form" method="POST" novalidate>
+                {{ form.hidden_tag() }}
+
+                <h2>Formulario</h2>
+
+                <div class="form-group">
+                    {{ form.nombre.label }}
+                    {{ form.nombre(class="form-control") }}
+
+                    <!-- Corrección: errors en lugar de erros -->
+                    {% for error in form.nombre.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.telefono.label }}
+                    <!-- Corrección: form-control en lugar de form-comtrol -->
+                    {{ form.telefono(class="form-control") }}
+
+                    {% for error in form.telefono.errors %}
+                        <small class="text-danger">{{ error }}</small>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.notas.label }}
+                    {{ form.notas(class="form-control") }}
+                </div>
+
+                <input type="hidden" id="order-items" name="order_items">
+
+                {{ form.submit(class="btn-submit") }}
+            </form>
+
+            <div class="payment-notice">
+                <p>Los pagos son en persona, ya sea en efectivo, tarjeta o transferencia</p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script src="{{ url_for('static', filename='js/ordena.js') }}"></script>
+{% endblock %}

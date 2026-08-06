@@ -1,0 +1,150 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+<main class="dashboard-container">
+
+    <!-- Header del Dashboard -->
+    <header class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">Panel de Control</h1>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <a href="{{ url_for('main.manage_stock') }}" class="stock-btn">Gestionar Stock</a>
+            <a href="{{ url_for('main.logout') }}" class="logout-btn">Cerrar Sesión</a>
+        </div>
+
+
+    </header>
+
+    <!-- Contenedor para Mensajes Flash -->
+    <div class="flash-messages">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <!-- Filtros y Métricas Rápidas -->
+    <nav class="status-filters">
+        <a href="{{ url_for('main.dashboard', status='todos') }}" class="filter-chip {% if current_status == 'todos' %}active{% endif %}">
+            Todos <span class="chip-count">{{ stats.todos }}</span>
+        </a>
+        <a href="{{ url_for('main.dashboard', status='pendiente') }}" class="filter-chip chip-pendiente {% if current_status == 'pendiente' %}active{% endif %}">
+            Pendientes <span class="chip-count">{{ stats.pendiente }}</span>
+        </a>
+        <a href="{{ url_for('main.dashboard', status='aceptado') }}" class="filter-chip chip-aceptado {% if current_status == 'aceptado' %}active{% endif %}">
+            Aceptados <span class="chip-count">{{ stats.aceptado }}</span>
+        </a>
+        <a href="{{ url_for('main.dashboard', status='en_proceso') }}" class="filter-chip chip-en_proceso {% if current_status == 'en_proceso' %}active{% endif %}">
+            En Proceso <span class="chip-count">{{ stats.en_proceso }}</span>
+        </a>
+        <a href="{{ url_for('main.dashboard', status='en_delivery') }}" class="filter-chip chip-en_delivery {% if current_status == 'en_delivery' %}active{% endif %}">
+            En Delivery <span class="chip-count">{{ stats.en_delivery }}</span>
+        </a>
+        <a href="{{ url_for('main.dashboard', status='completado') }}" class="filter-chip chip-completado {% if current_status == 'completado' %}active{% endif %}">
+            Completados <span class="chip-count">{{ stats.completado }}</span>
+        </a>
+    </nav>
+
+    <!-- Lista de Pedidos -->
+    <section class="orders-grid">
+        {% if orders %}
+            {% for order in orders %}
+                <article class="order-card status-border-{{ order.status }}">
+                    <header class="order-card-header">
+                        <div>
+                            <span class="order-id">#{{ order.id }}</span>
+                            <span class="order-time">{{ order.created_at.strftime('%H:%M - %d/%m/%Y') }}</span>
+                        </div>
+
+                        <!-- Selector de Estado con Envío Automático -->
+                        <form action="{{ url_for('main.update_order_status', order_id=order.id) }}" method="POST" class="status-form">
+                            <select name="status" class="status-select select-{{ order.status }}" onchange="this.form.submit()">
+                                <option value="pendiente" {% if order.status == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                <option value="aceptado" {% if order.status == 'aceptado' %}selected{% endif %}>Aceptado</option>
+                                <option value="en_proceso" {% if order.status == 'en_proceso' %}selected{% endif %}>En Proceso</option>
+                                <option value="en_delivery" {% if order.status == 'en_delivery' %}selected{% endif %}>En Delivery</option>
+                                <option value="completado" {% if order.status == 'completado' %}selected{% endif %}>Completado</option>
+                            </select>
+                        </form>
+                    </header>
+
+                    <!-- Detalles del Cliente -->
+                    <div class="customer-info">
+                        <p class="customer-name"><strong>{{ order.nombre }}</strong></p>
+                        <p class="customer-phone"> {{ order.telefono }}</p>
+                        {% if order.notas %}
+                            <p class="order-notes"><em>"{{ order.notas }}"</em></p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Desglose de Productos -->
+                    <ul class="order-items-list">
+                        {% for item in order.items %}
+                            <li>
+                                <span>{{ item.quantity }}x {{ item.variant.item.name if item.variant and item.variant.item else 'Producto' }} ({{ item.variant.variant_name }})</span>
+                                <span class="item-price">${{ "%.2f"|format(item.price * item.quantity) }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <!-- Footer de la Tarjeta con Total y Botón de Eliminar -->
+                    <footer class="order-card-footer">
+                        <div class="order-total">
+                            Total: <span>${{ "%.2f"|format(order.total) }}</span>
+                        </div>
+                        <button class="delete-btn" onclick="openDeleteModal('{{ order.id }}', '{{ order.nombre }}')">
+                            🗑️ Eliminar
+                        </button>
+                    </footer>
+                </article>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <p>No hay pedidos registrados con este estado.</p>
+            </div>
+        {% endif %}
+    </section>
+</main>
+
+<!-- MODAL DE DOBLE CONFIRMACIÓN PARA ELIMINAR -->
+<div id="deleteModal" class="modal-overlay">
+    <div class="modal-card">
+        <h3>¿Confirmas eliminar este pedido?</h3>
+        <p id="modalMessage">Esta acción no se puede deshacer.</p>
+
+        <form id="deleteForm" method="POST" action="">
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeDeleteModal()">Cancelar</button>
+                <button type="submit" class="btn-confirm-delete">Sí, Eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<script>
+    function openDeleteModal(orderId, customerName) {
+        const modal = document.getElementById('deleteModal');
+        const form = document.getElementById('deleteForm');
+        const message = document.getElementById('modalMessage');
+
+        form.action = `/admin/order/${orderId}/delete`;
+        message.innerHTML = `Estás a punto de eliminar el pedido <strong>#${orderId}</strong> de <strong>${customerName}</strong>.`;
+
+        modal.classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+    }
+</script>
+{% endblock %}

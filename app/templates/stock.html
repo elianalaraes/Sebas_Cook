@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+<main class="dashboard-container">
+    <header class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">Inventario y Stock</h1>
+            <p class="dashboard-subtitle">Control de cantidades y disponibilidad del menú</p>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <a href="{{ url_for('main.dashboard') }}" class="logout-btn" style="background:#f1f5f9; color:#475569; border-color:#cbd5e1;">← Volver al Panel</a>
+        </div>
+    </header>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('main.update_stock') }}" method="POST">
+        <div class="stock-actions-bar">
+            <button type="submit" class="save-stock-btn">Guardar Todos los Cambios</button>
+        </div>
+
+        <section class="stock-grid">
+            {% for item in menu_items %}
+                <article class="stock-card">
+                    <header class="stock-card-header">
+                        <div class="item-title-group">
+                            <h2>{{ item.name }}</h2>
+                        </div>
+
+                        <!-- Estado del Producto General -->
+                        <div class="status-picker">
+                            <select name="item_status_{{ item.id }}" class="status-select select-{{ item.status }}">
+                                <option value="disponible" {% if item.status == 'disponible' %}selected{% endif %}>Disponible</option>
+                                <option value="seasonal" {% if item.status == 'seasonal' %}selected{% endif %}>De Temporada</option>
+                                <option value="sold_out" {% if item.status == 'sold_out' %}selected{% endif %}>Agotado</option>
+                            </select>
+                        </div>
+                    </header>
+
+                    <!-- Lista de Variantes -->
+                    <div class="variants-container">
+                        <h3>Variantes</h3>
+                        <table class="variants-table">
+                            <thead>
+                                <tr>
+                                    <th>Variante</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad en Stock</th>
+                                    <th>Estado Variante</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for variant in item.variants %}
+                                    <tr>
+                                        <td><strong>{{ variant.variant_name }}</strong></td>
+                                        <td>${{ "%.2f"|format(variant.price) }}</td>
+                                        <td>
+                                            <input type="number"
+                                                   name="variant_remaining_{{ variant.id }}"
+                                                   value="{{ variant.remaining }}"
+                                                   min="0"
+                                                   class="stock-input">
+                                        </td>
+                                        <td>
+                                            <select name="variant_status_{{ variant.id }}" class="status-select select-{{ variant.status }}">
+                                                <option value="disponible" {% if variant.status == 'disponible' %}selected{% endif %}>Disponible</option>
+                                                <option value="seasonal" {% if variant.status == 'seasonal' %}selected{% endif %}>De Temporada</option>
+                                                <option value="sold_out" {% if variant.status == 'sold_out' %}selected{% endif %}>Agotado</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+    </form>
+</main>
+{% endblock %}

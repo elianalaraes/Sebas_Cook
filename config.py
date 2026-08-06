@@ -1,4 +1,9 @@
+import os
+
 class Config:
-    SECRET_KEY = 'devkey123'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-sebas-cook'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///sebas_cook.db'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     DEBUG = True
     TESTING = True
+
